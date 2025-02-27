@@ -177,6 +177,11 @@ export const DogsFilter = ({
       </Box>
 
       {dogsLoading && <Loader />}
+      {searchResults?.total === 0 && (
+        <Typography variant="h6" textAlign="center" sx={{ mt: 5 }} gutterBottom>
+          No dogs found. Please try adjusting your filters.
+        </Typography>
+      )}
       {dogs?.length === 1 ? (
         <Box sx={{ maxWidth: 400, margin: "auto" }}>
           {dogs?.map((dog) => (
