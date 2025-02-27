@@ -8,7 +8,6 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { loginUser, logoutUser, LoginCredentials } from "../api/authService";
 import apiClient from "../api/apiClient";
-import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   isAuthenticated: boolean;

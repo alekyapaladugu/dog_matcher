@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchBreeds, Dog } from "../api/dogService";
 import Loader from "../components/Loader";
 import ErrorModal from "../components/ErrorModal";
-import { Container, Typography, Tabs, Tab, Box } from "@mui/material";
+import { Container, Tabs, Tab, Box } from "@mui/material";
 import { DogsFilter } from "../components/DogsFilter";
 import { Favorites } from "../components/Favorites";
 import Header from "../components/Header";
@@ -27,7 +27,7 @@ const Dogs = () => {
         <Box sx={{ p: 3 }}>
           <Tabs
             value={tabIndex}
-            onChange={(e, newIndex) => setTabIndex(newIndex)}
+            onChange={(_, newIndex) => setTabIndex(newIndex)}
           >
             <Tab label="Search Dogs" />
             <Tab label="Favorite Dogs" />

@@ -9,11 +9,7 @@ interface SortByDropdownProps {
   sortOptions: { label: string; value: string; icon: JSX.Element }[];
 }
 
-const SortByDropdown = ({
-  sortOrder,
-  setSortOrder,
-  sortOptions,
-}: SortByDropdownProps) => {
+const SortByDropdown = ({ setSortOrder, sortOptions }: SortByDropdownProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 

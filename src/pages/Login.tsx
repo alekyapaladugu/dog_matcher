@@ -5,14 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 import { LoginCredentials } from "../api/authService";
 import Loader from "../components/Loader";
 import ErrorModal from "../components/ErrorModal";
-import {
-  Container,
-  TextField,
-  Button,
-  Box,
-  Typography,
-  Paper,
-} from "@mui/material";
+import { TextField, Button, Box, Typography } from "@mui/material";
 import Lottie from "lottie-react";
 import puppyAnimation from "../assets/puppy.json";
 
