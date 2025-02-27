@@ -59,7 +59,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         setIsAuthenticated(true);
       } catch (error) {
         setIsAuthenticated(false);
-        window.location.href = "/"; // Redirect to login if session is invalid
       } finally {
         setIsCheckingAuth(false);
       }
