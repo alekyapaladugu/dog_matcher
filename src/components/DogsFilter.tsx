@@ -3,18 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { searchDogs, fetchDogsByIds, Dog } from "../api/dogService";
 import Loader from "../components/Loader";
 import ErrorModal from "../components/ErrorModal";
-import {
-  Container,
-  TextField,
-  Select,
-  MenuItem,
-  Typography,
-  Box,
-  Pagination,
-  Chip,
-} from "@mui/material";
+import { Container, Typography, Box, Pagination, Chip } from "@mui/material";
 import { DogsCard } from "./DogsCard";
-import { useTheme } from "@mui/material/styles";
+import FilterDropdown from "./FilterDropdown";
+import SortByDropdown from "./SortByDropdown";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 interface DogsFilterProps {
   breeds: string[];
@@ -27,37 +21,48 @@ export const DogsFilter = ({
   favorites,
   setFavorites,
 }: DogsFilterProps) => {
-  const [selectedBreeds, setSelectedBreeds] = useState<string[]>([]);
-  const [zipCodes, setZipCodes] = useState<string[]>([]);
-  const [zipInput, setZipInput] = useState<string>("");
-  const [ageMin, setAgeMin] = useState<string | "">("");
-  const [ageMax, setAgeMax] = useState<string | "">("");
-  const [sortOrder, setSortOrder] = useState<string>("breed:asc");
   const [page, setPage] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
-  const [openDropdown, setOpenDropdown] = useState(false);
+  const [filters, setFilters] = useState({
+    selectedBreeds: [],
+    zipCodes: [],
+    ageMin: "",
+    ageMax: "",
+    sortOrder: "breed:asc",
+  });
 
-  const theme = useTheme();
+  const sortOptions = [
+    { label: "Breed (A-Z)", value: "breed:asc", icon: <ArrowUpwardIcon /> },
+    { label: "Breed (Z-A)", value: "breed:desc", icon: <ArrowDownwardIcon /> },
+    { label: "Dog Name (A-Z)", value: "name:asc", icon: <ArrowUpwardIcon /> },
+    {
+      label: "Dog Name (Z-A)",
+      value: "name:desc",
+      icon: <ArrowDownwardIcon />,
+    },
+    {
+      label: "Age (Youngest First)",
+      value: "age:asc",
+      icon: <ArrowUpwardIcon />,
+    },
+    {
+      label: "Age (Oldest First)",
+      value: "age:desc",
+      icon: <ArrowDownwardIcon />,
+    },
+  ];
 
   const { data: searchResults } = useQuery({
-    queryKey: [
-      "dogs",
-      selectedBreeds,
-      zipCodes,
-      ageMin,
-      ageMax,
-      sortOrder,
-      page,
-    ],
+    queryKey: ["dogs", filters, page],
     queryFn: () =>
       searchDogs({
-        breeds: selectedBreeds,
-        zipCodes: zipCodes.length ? zipCodes : [],
-        ageMin: ageMin ? Number(ageMin) : undefined,
-        ageMax: ageMax ? Number(ageMax) : undefined,
+        breeds: filters.selectedBreeds.length ? filters.selectedBreeds : [],
+        zipCodes: filters.zipCodes.length ? filters.zipCodes : [],
+        ageMin: filters.ageMin ? Number(filters.ageMin) : undefined,
+        ageMax: filters.ageMax ? Number(filters.ageMax) : undefined,
         size: 10,
         from: (page - 1) * 10,
-        sort: sortOrder,
+        sort: filters.sortOrder,
       }),
   });
 
@@ -75,45 +80,18 @@ export const DogsFilter = ({
     );
   };
 
-  const handleSelectionChange = (event: any, type: "breeds" | "zipCodes") => {
-    const value = event.target.value;
-    if (type === "breeds") {
-      setSelectedBreeds(
-        typeof value === "string"
-          ? value.split(",").map((b) => b.trim())
-          : value
-      );
-      setOpenDropdown(false);
-    } else {
-      setZipInput(
-        typeof value === "string"
-          ? value.split(",").map((z) => z.trim())
-          : value
-      );
-    }
+  const handleFilterChange = (updatedFilters: any) => {
+    setFilters((prevFilters) => ({ ...prevFilters, ...updatedFilters }));
+    setPage(1);
   };
 
-  const handleZipInputSubmit = (
-    event: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (event.key === "Enter" && zipInput) {
-      event.preventDefault();
-      const newZipCodes = zipInput;
-      setZipCodes(
-        [...zipCodes, ...newZipCodes].filter(
-          (z, i, arr) => arr.indexOf(z) === i
-        )
-      );
-      setZipInput("");
-    }
+  const getSortLabel = (value: string) => {
+    const option = sortOptions.find((opt) => opt.value === value);
+    return option ? option.label : "Breed (A-Z)";
   };
 
-  const handleDeleteSelection = (item: string, type: "breeds" | "zipCodes") => {
-    if (type === "breeds") {
-      setSelectedBreeds(selectedBreeds.filter((b) => b !== item));
-    } else {
-      setZipCodes(zipCodes.filter((z) => z !== item));
-    }
+  const handleDeleteSelection = (filter_name: any, value: any) => {
+    setFilters({ ...filters, [filter_name]: value });
     setPage(1);
   };
 
@@ -122,123 +100,112 @@ export const DogsFilter = ({
       <Typography
         variant="h4"
         textAlign="center"
-        sx={{ mt: 3, mb: 3 }}
+        sx={(theme) => ({
+          mt: 3,
+          mb: 3,
+          fontWeight: 700,
+          color: theme.palette.primary.main,
+        })}
         gutterBottom
       >
-        Search and Filter Dogs
+        Search Dogs
       </Typography>
       {error && <ErrorModal message={error} onClose={() => setError(null)} />}
-      <Select
-        multiple
-        value={selectedBreeds}
-        onChange={(e) => handleSelectionChange(e, "breeds")}
-        open={openDropdown}
-        onOpen={() => setOpenDropdown(true)}
-        onClose={() => setOpenDropdown(false)}
-        fullWidth
-        displayEmpty
-        renderValue={(selected) => (
-          <Typography
-            sx={(theme) => ({
-              color:
-                selected.length === 0 ? theme.palette.text.disabled : "inherit",
-              opacity: 1,
-            })}
-          >
-            {selected.length === 0 ? "Select Breeds" : selected.join(", ")}
-          </Typography>
-        )}
-      >
-        {breeds?.map((breed: string) => (
-          <MenuItem key={breed} value={breed}>
-            {breed}
-          </MenuItem>
-        ))}
-      </Select>
-      {selectedBreeds.length > 0 && (
-        <Box sx={{ display: "flex", flexWrap: "wrap", mt: 1 }}>
-          {selectedBreeds.map((breed) => (
-            <Chip
-              key={breed}
-              label={breed}
-              onDelete={() => handleDeleteSelection(breed, "breeds")}
-              sx={{ m: 0.5 }}
-            />
-          ))}
-        </Box>
-      )}
 
-      <TextField
-        label="Enter Zip Codes (comma-separated)"
-        value={zipInput}
-        onChange={(e) => handleSelectionChange(e, "zipCodes")}
-        onKeyDown={handleZipInputSubmit}
-        fullWidth
-        margin="normal"
-        placeholder="Type zip codes and press Enter"
-      />
-      {zipCodes.length > 0 && (
-        <Box sx={{ display: "flex", flexWrap: "wrap", mt: 1 }}>
-          {zipCodes.map((zip) => (
-            <Chip
-              key={zip}
-              label={zip}
-              onDelete={() => handleDeleteSelection(zip, "zipCodes")}
-              sx={{ m: 0.5 }}
-            />
-          ))}
-        </Box>
-      )}
-
-      <TextField
-        label="Min Age"
-        type="number"
-        value={ageMin}
-        onChange={(e) => setAgeMin(e.target.value)}
-        fullWidth
-        margin="normal"
-      />
-      <TextField
-        label="Max Age"
-        type="number"
-        value={ageMax}
-        onChange={(e) => setAgeMax(e.target.value)}
-        fullWidth
-        margin="normal"
-      />
       <Box
-        margin="normal"
-        sx={{ width: "100%", "margin-top": "16px", "margin-bottom": "8px" }}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          flexWrap: "wrap",
+          mb: 2,
+        }}
       >
-        <Select
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value)}
-          fullWidth
-        >
-          <MenuItem value="breed:asc">Breed A-Z</MenuItem>
-          <MenuItem value="breed:desc">Breed Z-A</MenuItem>
-          <MenuItem value="name:asc">Dog Name A-Z</MenuItem>
-          <MenuItem value="name:desc">Dog Name Z-A</MenuItem>
-          <MenuItem value="age:asc">Age Ascending</MenuItem>
-          <MenuItem value="age:desc">Age Descending</MenuItem>
-        </Select>
+        <SortByDropdown
+          sortOrder={filters.sortOrder}
+          setSortOrder={(value) => handleFilterChange({ sortOrder: value })}
+          sortOptions={sortOptions}
+        />
+        <FilterDropdown
+          filters={filters}
+          setFilters={handleFilterChange}
+          breeds={breeds}
+        />
       </Box>
-      {dogsLoading && <Loader />}
-      <Box
-        display="grid"
-        gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))"
-        gap={2}
-        sx={{ mt: 2 }}
-      >
-        {dogs?.map((dog) => (
-          <DogsCard
-            key={dog.id}
-            dog={dog}
-            isFavorite={favorites.some((fav) => fav.id === dog.id)}
-            onFavoriteToggle={handleFavorite}
+
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+        <Chip
+          label={`Sorted by: ${getSortLabel(filters.sortOrder)}`}
+          onDelete={() => handleDeleteSelection("sortOrder", "breed:asc")}
+        />
+        {filters.selectedBreeds.map((breed) => (
+          <Chip
+            key={breed}
+            label={breed}
+            onDelete={() =>
+              handleDeleteSelection(
+                "selectedBreeds",
+                filters.selectedBreeds.filter((b) => b !== breed)
+              )
+            }
           />
         ))}
+        {filters.zipCodes.map((zip) => (
+          <Chip
+            key={zip}
+            label={zip}
+            onDelete={() =>
+              handleDeleteSelection(
+                "zipCodes",
+                filters.zipCodes.filter((z) => z !== zip)
+              )
+            }
+          />
+        ))}
+        {filters.ageMin && (
+          <Chip
+            label={`Min Age: ${filters.ageMin}`}
+            onDelete={() => handleDeleteSelection("ageMin", "")}
+          />
+        )}
+        {filters.ageMax && (
+          <Chip
+            label={`Max Age: ${filters.ageMax}`}
+            onDelete={() => handleDeleteSelection("ageMax", "")}
+          />
+        )}
       </Box>
+
+      {dogsLoading && <Loader />}
+      {dogs?.length === 1 ? (
+        <Box sx={{ maxWidth: 400, margin: "auto" }}>
+          {dogs?.map((dog) => (
+            <DogsCard
+              key={dog.id}
+              dog={dog}
+              isFavorite={favorites.some((fav) => fav.id === dog.id)}
+              onFavoriteToggle={handleFavorite}
+            />
+          ))}
+        </Box>
+      ) : (
+        <Box
+          display="grid"
+          gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))"
+          gap={2}
+          sx={{ mt: 2 }}
+        >
+          {dogs?.map((dog) => (
+            <DogsCard
+              key={dog.id}
+              dog={dog}
+              isFavorite={favorites.some((fav) => fav.id === dog.id)}
+              onFavoriteToggle={handleFavorite}
+            />
+          ))}
+        </Box>
+      )}
+
       {searchResults?.total !== undefined && searchResults?.total > 0 ? (
         <Box sx={{ p: 5, display: "flex", justifyContent: "center" }}>
           <Pagination

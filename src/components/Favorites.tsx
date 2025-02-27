@@ -45,7 +45,17 @@ export const Favorites = ({ favorites, setFavorites }: FavoriteDogsProps) => {
       {error && <ErrorModal message={error} onClose={() => setError(null)} />}
       <Box>
         {!matchedDog && (
-          <Typography variant="h4" textAlign="center" gutterBottom>
+          <Typography
+            variant="h4"
+            textAlign="center"
+            sx={(theme) => ({
+              mt: 3,
+              mb: 3,
+              fontWeight: 700,
+              color: theme.palette.primary.main,
+            })}
+            gutterBottom
+          >
             Favorite Dogs
           </Typography>
         )}
@@ -54,22 +64,34 @@ export const Favorites = ({ favorites, setFavorites }: FavoriteDogsProps) => {
             Add cute dogs to your favorites to find a match!
           </Typography>
         )}
-
-        <Box
-          display="grid"
-          gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))"
-          gap={2}
-          sx={{ mt: 2 }}
-        >
-          {favorites.map((dog) => (
-            <DogsCard
-              key={dog.id}
-              dog={dog}
-              isFavorite={favorites.some((fav) => fav.id === dog.id)}
-              onFavoriteToggle={handleFavorite}
-            />
-          ))}
-        </Box>
+        {favorites.length === 1 ? (
+          <Box sx={{ maxWidth: 400, margin: "auto" }}>
+            {favorites.map((dog) => (
+              <DogsCard
+                key={dog.id}
+                dog={dog}
+                isFavorite={favorites.some((fav) => fav.id === dog.id)}
+                onFavoriteToggle={handleFavorite}
+              />
+            ))}
+          </Box>
+        ) : (
+          <Box
+            display="grid"
+            gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))"
+            gap={2}
+            sx={{ mt: 2 }}
+          >
+            {favorites.map((dog) => (
+              <DogsCard
+                key={dog.id}
+                dog={dog}
+                isFavorite={favorites.some((fav) => fav.id === dog.id)}
+                onFavoriteToggle={handleFavorite}
+              />
+            ))}
+          </Box>
+        )}
 
         {!matchedDog && (
           <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -90,10 +112,22 @@ export const Favorites = ({ favorites, setFavorites }: FavoriteDogsProps) => {
         {loading && <Loader />}
         {matchedDog && (
           <Box mt={5}>
-            <Typography variant="h4" textAlign="center" gutterBottom>
+            <Typography
+              variant="h4"
+              textAlign="center"
+              sx={(theme) => ({
+                mt: 3,
+                mb: 3,
+                fontWeight: 700,
+                color: theme.palette.primary.main,
+              })}
+              gutterBottom
+            >
               Congratulations! You found a match!
             </Typography>
-            <DogsCard dog={matchedDog} />
+            <Box sx={{ maxWidth: 400, margin: "auto" }}>
+              <DogsCard dog={matchedDog} />
+            </Box>
           </Box>
         )}
       </Box>

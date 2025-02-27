@@ -19,7 +19,7 @@ export const DogsCard = ({
   onFavoriteToggle,
 }: DogCardProps) => {
   return (
-    <Card sx={{ p: 2, borderRadius: 3 }}>
+    <Card sx={{ p: 2, borderRadius: 3, backgroundColor: "#eddac1" }}>
       <CardMedia
         component="img"
         height="200"
@@ -28,7 +28,9 @@ export const DogsCard = ({
         sx={{ objectFit: "contain" }}
       />
       <CardContent>
-        <Typography variant="h6">{dog.name}</Typography>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          {dog.name}
+        </Typography>
         <Typography>Breed: {dog.breed}</Typography>
         <Typography>Age: {dog.age}</Typography>
         <Typography>Zip Code: {dog.zip_code}</Typography>

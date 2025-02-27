@@ -58,7 +58,12 @@ const Login = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setCredentials({ ...credentials, [name]: value });
+    setErrors((prevErrors: any) => ({
+      ...prevErrors,
+      [name]: value.trim() ? "" : prevErrors[name],
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -80,9 +85,22 @@ const Login = () => {
 
   return (
     <>
-      <Container maxWidth="sm">
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          width: "100%",
+          bgcolor: "#eddac1",
+        }}
+      >
         <Box textAlign="center" mt={5}>
-          <Typography variant="h4" gutterBottom>
+          <Typography
+            variant="h4"
+            sx={(theme) => ({ color: theme.palette.primary.main })}
+            gutterBottom
+          >
             Welcome to Dog Finder!
           </Typography>
           <Box textAlign="right" mt={5}>
@@ -129,7 +147,7 @@ const Login = () => {
             </Button>
           </Box>
         </Box>
-      </Container>
+      </Box>
     </>
   );
 };
