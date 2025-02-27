@@ -7,10 +7,11 @@ import {
 } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { loginUser, logoutUser, LoginCredentials } from "../api/authService";
-import apiClient from "../api/apiClient";
+import { fetchBreeds } from "../api/dogService";
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isCheckingAuth: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -31,6 +32,7 @@ export const useAuth = () => {
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) =>
@@ -51,24 +53,19 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   });
 
   useEffect(() => {
-    let logoutTimer: NodeJS.Timeout;
-
-    const handleLogout = () => {
-      apiClient.post("/auth/logout").finally(() => {
+    const checkAuth = async () => {
+      try {
+        await fetchBreeds(); // Backend should return 200 if session exists
+        setIsAuthenticated(true);
+      } catch (error) {
         setIsAuthenticated(false);
-        window.location.href = "/";
-      });
+        window.location.href = "/"; // Redirect to login if session is invalid
+      } finally {
+        setIsCheckingAuth(false);
+      }
     };
 
-    const startLogoutTimer = () => {
-      logoutTimer = setTimeout(() => {
-        handleLogout();
-      }, 3600000);
-    };
-
-    startLogoutTimer();
-
-    return () => clearTimeout(logoutTimer);
+    checkAuth();
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
@@ -80,7 +77,9 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, isCheckingAuth, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
