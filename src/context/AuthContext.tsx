@@ -13,7 +13,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isCheckingAuth: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,14 +35,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginCredentials) =>
-      await loginUser(credentials),
-    onSuccess: () => {
-      setIsAuthenticated(true);
-    },
-    onError: (error) => {
-      console.error("Login failed", error);
-    },
+    mutationFn: (credentials: LoginCredentials) => loginUser(credentials),
   });
 
   const logoutMutation = useMutation({
@@ -68,11 +61,16 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
-    await loginMutation.mutateAsync(credentials);
+    try {
+      await loginMutation.mutateAsync(credentials);
+      setIsAuthenticated(true);
+    } catch (error) {
+      setIsAuthenticated(false);
+    }
   };
 
-  const logout = async () => {
-    await logoutMutation.mutate();
+  const logout = () => {
+    logoutMutation.mutate();
   };
 
   return (
