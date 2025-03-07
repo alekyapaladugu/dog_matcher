@@ -8,11 +8,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { Filters } from "./DogsFilter";
 import FilterListIcon from "@mui/icons-material/FilterList";
 
 interface FilterDropdownProps {
-  filters: any;
-  setFilters: any;
+  filters: Filters;
+  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
   breeds: string[];
 }
 
@@ -40,32 +41,30 @@ const FilterDropdown = ({
     setAnchorEl(null);
   };
 
-  const handleFilterChange = (key: string, value: any) => {
-    setTempFilters((prev: any) => ({
+  const handleFilterChange = (
+    key: string,
+    value: string | string[] | number[]
+  ) => {
+    setTempFilters((prev: Filters) => ({
       ...prev,
       [key]: value,
     }));
   };
 
-  const handleZipInput = (value: any) => {
+  const handleZipInput = (value: string) => {
     value = value.replace(/[^0-9,]/g, ""); // Remove non-numeric characters
 
     setZipInput(value);
-    let zipInputs_split = value.split(",").map((z: any) => {
-      if (z.length === 5) {
-        return z.trim();
-      }
-    });
-    if (value.includes(",")) {
-      handleFilterChange(
-        "zipCodes",
-        zipInputs_split.filter((z: any) => z)
-      );
-    } else {
-      if (value.length === 5) {
-        handleFilterChange("zipCodes", zipInputs_split);
-      }
-    }
+    let zipInputs_split = value
+      .split(",")
+      .map((z: string) => {
+        if (z.length === 5) {
+          return z.trim();
+        }
+      })
+      .filter(Boolean) as string[];
+
+    handleFilterChange("zipCodes", zipInputs_split);
   };
 
   return (
@@ -121,7 +120,7 @@ const FilterDropdown = ({
           </Select>
 
           <Typography variant="body2">
-            Enter zip codes (comma separated) and press Enter
+            Enter zip codes (comma separated)
           </Typography>
           <TextField
             fullWidth

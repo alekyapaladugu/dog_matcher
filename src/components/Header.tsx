@@ -1,18 +1,12 @@
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import dogIcon from "../assets/dog-icon.svg";
-import { AuthContext } from "../context/AuthContext";
-import { useContext } from "react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Header() {
   const navigate = useNavigate();
-  const authContext = useContext(AuthContext);
 
-  if (!authContext) {
-    return null;
-  }
-
-  const { logout } = authContext;
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
     try {

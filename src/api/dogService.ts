@@ -5,7 +5,7 @@ export interface Dog {
   img: string;
   name: string;
   age: number;
-  zip_code: string;
+  zip_code: number;
   breed: string;
 }
 
@@ -16,9 +16,9 @@ export const fetchBreeds = async (): Promise<string[]> => {
 
 export const searchDogs = async (params: {
   breeds?: string[];
-  zipCodes?: string[];
-  ageMin?: number;
-  ageMax?: number;
+  zipCodes?: number[];
+  ageMin?: number | string;
+  ageMax?: number | string;
   size?: number;
   from?: number;
   sort?: string;

@@ -9,12 +9,16 @@ import { TextField, Button, Box, Typography } from "@mui/material";
 import Lottie from "lottie-react";
 import puppyAnimation from "../assets/puppy.json";
 
+interface Errors {
+  name: string;
+  email: string;
+}
 const Login = () => {
   const [credentials, setCredentials] = useState<LoginCredentials>({
     name: "",
     email: "",
   });
-  const [errors, setErrors] = useState<{ name: string; email: string }>({
+  const [errors, setErrors] = useState<Errors>({
     name: "",
     email: "",
   });
@@ -53,9 +57,11 @@ const Login = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCredentials({ ...credentials, [name]: value });
-    setErrors((prevErrors: any) => ({
+    setErrors((prevErrors: Errors) => ({
       ...prevErrors,
-      [name]: value.trim() ? "" : prevErrors[name],
+      [name as keyof Errors]: value.trim()
+        ? ""
+        : prevErrors[name as keyof Errors],
     }));
   };
 

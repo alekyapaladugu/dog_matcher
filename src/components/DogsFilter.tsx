@@ -16,6 +16,14 @@ interface DogsFilterProps {
   setFavorites: React.Dispatch<React.SetStateAction<Dog[]>>;
 }
 
+export interface Filters {
+  selectedBreeds: string[];
+  zipCodes: number[];
+  ageMin: string | number;
+  ageMax: string | number;
+  sortOrder: string;
+}
+
 export const DogsFilter = ({
   breeds,
   favorites,
@@ -23,7 +31,7 @@ export const DogsFilter = ({
 }: DogsFilterProps) => {
   const [page, setPage] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     selectedBreeds: [],
     zipCodes: [],
     ageMin: "",
@@ -80,7 +88,7 @@ export const DogsFilter = ({
     );
   };
 
-  const handleFilterChange = (updatedFilters: any) => {
+  const handleFilterChange = (updatedFilters: Object) => {
     setFilters((prevFilters) => ({ ...prevFilters, ...updatedFilters }));
     setPage(1);
   };
@@ -90,7 +98,10 @@ export const DogsFilter = ({
     return option ? option.label : "Breed (A-Z)";
   };
 
-  const handleDeleteSelection = (filter_name: any, value: any) => {
+  const handleDeleteSelection = (
+    filter_name: string,
+    value: string | string[] | number[]
+  ) => {
     setFilters({ ...filters, [filter_name]: value });
     setPage(1);
   };
@@ -122,7 +133,7 @@ export const DogsFilter = ({
         }}
       >
         <SortByDropdown
-          sortOrder={filters.sortOrder}
+          sortOrder={filters?.sortOrder}
           setSortOrder={(value) => handleFilterChange({ sortOrder: value })}
           sortOptions={sortOptions}
         />
@@ -138,19 +149,19 @@ export const DogsFilter = ({
           label={`Sorted by: ${getSortLabel(filters.sortOrder)}`}
           onDelete={() => handleDeleteSelection("sortOrder", "breed:asc")}
         />
-        {filters.selectedBreeds.map((breed) => (
+        {filters?.selectedBreeds?.map((breed) => (
           <Chip
             key={breed}
             label={breed}
             onDelete={() =>
               handleDeleteSelection(
                 "selectedBreeds",
-                filters.selectedBreeds.filter((b) => b !== breed)
+                filters?.selectedBreeds?.filter((b) => b !== breed)
               )
             }
           />
         ))}
-        {filters.zipCodes.map((zip) => (
+        {filters?.zipCodes.map((zip) => (
           <Chip
             key={zip}
             label={zip}
