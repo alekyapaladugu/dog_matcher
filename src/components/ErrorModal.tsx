@@ -8,7 +8,7 @@ interface ErrorModalProps {
   onClose: () => void;
 }
 
-const ErrorModal: React.FC<ErrorModalProps> = ({ message, onClose }) => {
+const ErrorModal = ({ message, onClose }: ErrorModalProps) => {
   return (
     <Modal open={Boolean(message)} onClose={onClose}>
       <Box
