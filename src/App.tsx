@@ -66,9 +66,12 @@ const theme = createTheme({
 const router = createBrowserRouter([
   { path: "/", element: <Login /> },
   {
-    path: "/",
-    element: <ProtectedRoute />,
-    children: [{ path: "dogs", element: <Dogs /> }],
+    path: "/dogs",
+    element: (
+      <ProtectedRoute>
+        <Dogs />
+      </ProtectedRoute>
+    ),
   },
   { path: "*", element: <Login /> },
 ]);
