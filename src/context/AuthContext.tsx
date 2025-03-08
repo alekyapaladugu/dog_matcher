@@ -13,7 +13,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isCheckingAuth: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,9 +40,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logoutMutation = useMutation({
     mutationFn: logoutUser,
-    onSuccess: () => {
-      setIsAuthenticated(false);
-    },
   });
 
   useEffect(() => {
@@ -64,13 +61,21 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       await loginMutation.mutateAsync(credentials);
       setIsAuthenticated(true);
+      return;
     } catch (error) {
       setIsAuthenticated(false);
+      throw error;
     }
   };
 
-  const logout = () => {
-    logoutMutation.mutate();
+  const logout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+      setIsAuthenticated(false);
+      return;
+    } catch (err) {
+      throw err;
+    }
   };
 
   return (

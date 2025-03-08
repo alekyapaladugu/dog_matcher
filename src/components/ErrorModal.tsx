@@ -22,14 +22,19 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ message, onClose }) => {
           boxShadow: 24,
           p: 4,
           borderRadius: 2,
-          textAlign: "center"
+          textAlign: "center",
         }}
       >
         <Typography variant="h6" component="h2" color="error">
           Error
         </Typography>
         <Typography sx={{ mt: 2 }}>{message}</Typography>
-        <Button variant="contained" color="error" onClick={onClose} sx={{ mt: 2 }}>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={onClose}
+          sx={{ mt: 2 }}
+        >
           Close
         </Button>
       </Box>

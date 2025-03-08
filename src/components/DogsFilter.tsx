@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { searchDogs, fetchDogsByIds, Dog } from "../api/dogService";
 import Loader from "../components/Loader";
 import ErrorModal from "../components/ErrorModal";
@@ -31,6 +31,7 @@ export const DogsFilter = ({
 }: DogsFilterProps) => {
   const [page, setPage] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
+  const [dogsDetails, setDogDetails] = useState<Dog[]>([]);
   const [filters, setFilters] = useState<Filters>({
     selectedBreeds: [],
     zipCodes: [],
@@ -60,7 +61,12 @@ export const DogsFilter = ({
     },
   ];
 
-  const { data: searchResults } = useQuery({
+  const {
+    data: searchResults,
+    isError: isSearchResError,
+    isLoading: searchResLoading,
+    error: searchResError,
+  } = useQuery({
     queryKey: ["dogs", filters, page],
     queryFn: () =>
       searchDogs({
@@ -74,11 +80,27 @@ export const DogsFilter = ({
       }),
   });
 
-  const { data: dogs, isLoading: dogsLoading } = useQuery({
-    queryKey: ["dogDetails", searchResults?.resultIds],
-    queryFn: () => fetchDogsByIds(searchResults?.resultIds || []),
-    enabled: !!searchResults?.resultIds?.length,
+  const dogDetailsMutation = useMutation({
+    mutationFn: fetchDogsByIds,
+    onSuccess: (data: Dog[]) => setDogDetails(data),
   });
+
+  useEffect(() => {
+    if (searchResults?.resultIds && searchResults?.resultIds?.length > 0) {
+      dogDetailsMutation.mutate(searchResults?.resultIds ?? []);
+    }
+  }, [searchResults]);
+
+  useEffect(() => {
+    if (isSearchResError) {
+      setError(`Filtering of Dogs failed: ${searchResError.message}`);
+    }
+    if (dogDetailsMutation?.isError) {
+      setError(
+        `Fetching of Dog Details failed: ${dogDetailsMutation?.error?.message}`
+      );
+    }
+  }, [isSearchResError, dogDetailsMutation?.isError]);
 
   const handleFavorite = (dog: Dog) => {
     setFavorites((prevFavorites) =>
@@ -187,15 +209,15 @@ export const DogsFilter = ({
         )}
       </Box>
 
-      {dogsLoading && <Loader />}
+      {(searchResLoading || dogDetailsMutation?.isPending) && <Loader />}
       {searchResults?.total === 0 && (
         <Typography variant="h6" textAlign="center" sx={{ mt: 5 }} gutterBottom>
           No dogs found. Please try adjusting your filters.
         </Typography>
       )}
-      {dogs?.length === 1 ? (
+      {dogsDetails && dogsDetails?.length === 1 ? (
         <Box sx={{ maxWidth: 400, margin: "auto" }}>
-          {dogs?.map((dog) => (
+          {dogsDetails?.map((dog) => (
             <DogsCard
               key={dog.id}
               dog={dog}
@@ -211,7 +233,7 @@ export const DogsFilter = ({
           gap={2}
           sx={{ mt: 2 }}
         >
-          {dogs?.map((dog) => (
+          {dogsDetails?.map((dog) => (
             <DogsCard
               key={dog.id}
               dog={dog}
@@ -222,7 +244,7 @@ export const DogsFilter = ({
         </Box>
       )}
 
-      {searchResults?.total !== undefined && searchResults?.total > 0 ? (
+      {searchResults?.total && searchResults?.total > 0 ? (
         <Box sx={{ p: 5, display: "flex", justifyContent: "center" }}>
           <Pagination
             count={Math.ceil((searchResults?.total || 10) / 10)}

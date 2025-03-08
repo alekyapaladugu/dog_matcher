@@ -7,12 +7,14 @@ import Dogs from "./pages/Dogs";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000,
+      retry: 3,
     },
   },
 });
@@ -79,6 +81,7 @@ const App = () => {
         <AuthProvider>
           <RouterProvider router={router} />
         </AuthProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </ThemeProvider>
   );

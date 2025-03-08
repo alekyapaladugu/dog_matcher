@@ -4,6 +4,7 @@ import { Box, Button, Container, Typography } from "@mui/material";
 import { DogsCard } from "./DogsCard";
 import ErrorModal from "../components/ErrorModal";
 import Loader from "./Loader";
+import { useMutation } from "@tanstack/react-query";
 
 interface FavoriteDogsProps {
   favorites: Dog[];
@@ -13,23 +14,21 @@ interface FavoriteDogsProps {
 export const Favorites = ({ favorites, setFavorites }: FavoriteDogsProps) => {
   const [matchedDog, setMatchedDog] = useState<Dog | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleFindMatch = async () => {
-    if (favorites.length === 0) return;
-    setLoading(true);
-    try {
-      const matchResult = await getMatch(favorites.map((dog) => dog.id));
-      const matchedDogDetails = favorites.find(
-        (dog) => dog.id === matchResult.match
-      );
+  const dogMatchMutation = useMutation({
+    mutationFn: getMatch,
+    onSuccess: (data) => {
+      const matchedDogDetails = favorites.find((dog) => dog.id === data.match);
       setMatchedDog(matchedDogDetails || null);
       setFavorites([]);
-    } catch (error) {
-      setError("Error finding match");
-    } finally {
-      setLoading(false);
-    }
+    },
+    onError: (error) => {
+      setError(`Error finding match: ${error}`);
+    },
+  });
+
+  const handleFindMatch = () => {
+    dogMatchMutation.mutate(favorites.map((dog) => dog.id));
   };
 
   const handleFavorite = (dog: Dog) => {
@@ -59,7 +58,7 @@ export const Favorites = ({ favorites, setFavorites }: FavoriteDogsProps) => {
             Favorite Dogs
           </Typography>
         )}
-        {!matchedDog && favorites.length === 0 && (
+        {!matchedDog && favorites?.length === 0 && (
           <Typography variant="h6" textAlign="center" gutterBottom>
             Add cute dogs to your favorites to find a match!
           </Typography>
@@ -109,7 +108,7 @@ export const Favorites = ({ favorites, setFavorites }: FavoriteDogsProps) => {
             </Button>
           </Box>
         )}
-        {loading && <Loader />}
+        {dogMatchMutation.isPending && <Loader />}
         {matchedDog && (
           <Box mt={5}>
             <Typography

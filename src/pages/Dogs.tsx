@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchBreeds, Dog } from "../api/dogService";
 import Loader from "../components/Loader";
@@ -11,19 +11,36 @@ import Header from "../components/Header";
 const Dogs = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [favorites, setFavorites] = useState<Dog[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [breedsError, setBreedsError] = useState<string | null>(null);
 
-  const { data: breeds, isLoading: breedsLoading } = useQuery({
+  const {
+    data: breeds,
+    isLoading: breedsLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["breeds"],
     queryFn: fetchBreeds,
+    retry: 3,
   });
+
+  useEffect(() => {
+    if (isError) {
+      setBreedsError(`Loading of Breeds Failed: ${error?.message}`);
+    }
+  }, [isError]);
 
   return (
     <>
       <Header />
       <Container>
         {breedsLoading && <Loader />}
-        {error && <ErrorModal message={error} onClose={() => setError(null)} />}
+        {breedsError && (
+          <ErrorModal
+            message={breedsError}
+            onClose={() => setBreedsError(null)}
+          />
+        )}
         <Box sx={{ p: 3 }}>
           <Tabs
             value={tabIndex}
