@@ -86,7 +86,7 @@ export const DogsFilter = ({
   });
 
   useEffect(() => {
-    if (searchResults?.resultIds && searchResults?.resultIds?.length > 0) {
+    if (searchResults?.resultIds) {
       dogDetailsMutation.mutate(searchResults?.resultIds ?? []);
     }
   }, [searchResults]);
