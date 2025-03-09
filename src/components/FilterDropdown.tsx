@@ -42,8 +42,8 @@ const FilterDropdown = ({
   };
 
   const handleFilterChange = (
-    key: string,
-    value: string | string[] | number[]
+    key: keyof Filters,
+    value: Filters[typeof key]
   ) => {
     setTempFilters((prev: Filters) => ({
       ...prev,
@@ -62,7 +62,7 @@ const FilterDropdown = ({
           return z.trim();
         }
       })
-      .filter(Boolean) as string[];
+      .filter((z) => z) as string[];
 
     handleFilterChange("zipCodes", zipInputs_split);
   };

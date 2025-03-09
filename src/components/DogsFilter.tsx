@@ -18,9 +18,9 @@ interface DogsFilterProps {
 
 export interface Filters {
   selectedBreeds: string[];
-  zipCodes: number[];
-  ageMin: string | number;
-  ageMax: string | number;
+  zipCodes: string[];
+  ageMin: string;
+  ageMax: string;
   sortOrder: string;
 }
 

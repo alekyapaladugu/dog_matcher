@@ -20,9 +20,9 @@ export const fetchBreeds = async (): Promise<string[]> => {
 
 export const searchDogs = async (params: {
   breeds?: string[];
-  zipCodes?: number[];
-  ageMin?: number | string;
-  ageMax?: number | string;
+  zipCodes?: string[];
+  ageMin?: number;
+  ageMax?: number;
   size?: number;
   from?: number;
   sort?: string;
