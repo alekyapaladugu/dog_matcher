@@ -87,7 +87,7 @@ export const DogsFilter = ({
 
   useEffect(() => {
     if (searchResults?.resultIds && searchResults?.resultIds?.length > 0) {
-      dogDetailsMutation.mutate(searchResults?.resultIds ?? []);
+      dogDetailsMutation.mutate(searchResults?.resultIds);
     } else {
       setDogDetails([]);
     }
@@ -185,6 +185,7 @@ export const DogsFilter = ({
             }
           />
         ))}
+
         {filters?.zipCodes.map((zip) => (
           <Chip
             key={zip}
@@ -217,34 +218,29 @@ export const DogsFilter = ({
           No dogs found. Please try adjusting your filters.
         </Typography>
       )}
-      {dogsDetails && dogsDetails?.length === 1 ? (
-        <Box sx={{ maxWidth: 400, margin: "auto" }}>
-          {dogsDetails?.map((dog) => (
-            <DogsCard
-              key={dog.id}
-              dog={dog}
-              isFavorite={favorites.some((fav) => fav.id === dog.id)}
-              onFavoriteToggle={handleFavorite}
-            />
-          ))}
-        </Box>
-      ) : (
-        <Box
-          display="grid"
-          gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))"
-          gap={2}
-          sx={{ mt: 2 }}
-        >
-          {dogsDetails?.map((dog) => (
-            <DogsCard
-              key={dog.id}
-              dog={dog}
-              isFavorite={favorites.some((fav) => fav.id === dog.id)}
-              onFavoriteToggle={handleFavorite}
-            />
-          ))}
-        </Box>
-      )}
+
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns:
+            dogsDetails.length === 1
+              ? "1fr"
+              : "repeat(auto-fit, minmax(300px, 1fr))",
+          maxWidth: dogsDetails.length === 1 ? 400 : "100%",
+          margin: dogsDetails.length === 1 ? "auto" : 0,
+          gap: 2,
+          mt: 2,
+        }}
+      >
+        {dogsDetails?.map((dog) => (
+          <DogsCard
+            key={dog.id}
+            dog={dog}
+            isFavorite={favorites.some((fav) => fav.id === dog.id)}
+            onFavoriteToggle={handleFavorite}
+          />
+        ))}
+      </Box>
 
       {searchResults?.total && searchResults?.total > 0 ? (
         <Box sx={{ p: 5, display: "flex", justifyContent: "center" }}>

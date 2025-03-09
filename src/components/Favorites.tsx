@@ -63,34 +63,29 @@ export const Favorites = ({ favorites, setFavorites }: FavoriteDogsProps) => {
             Add cute dogs to your favorites to find a match!
           </Typography>
         )}
-        {favorites.length === 1 ? (
-          <Box sx={{ maxWidth: 400, margin: "auto" }}>
-            {favorites.map((dog) => (
-              <DogsCard
-                key={dog.id}
-                dog={dog}
-                isFavorite={favorites.some((fav) => fav.id === dog.id)}
-                onFavoriteToggle={handleFavorite}
-              />
-            ))}
-          </Box>
-        ) : (
-          <Box
-            display="grid"
-            gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))"
-            gap={2}
-            sx={{ mt: 2 }}
-          >
-            {favorites.map((dog) => (
-              <DogsCard
-                key={dog.id}
-                dog={dog}
-                isFavorite={favorites.some((fav) => fav.id === dog.id)}
-                onFavoriteToggle={handleFavorite}
-              />
-            ))}
-          </Box>
-        )}
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns:
+              favorites.length === 1
+                ? "1fr"
+                : "repeat(auto-fit, minmax(300px, 1fr))",
+            maxWidth: favorites.length === 1 ? 400 : "100%",
+            margin: favorites.length === 1 ? "auto" : 0,
+            gap: 2,
+            mt: 2,
+          }}
+        >
+          {favorites.map((dog) => (
+            <DogsCard
+              key={dog.id}
+              dog={dog}
+              isFavorite={favorites.some((fav) => fav.id === dog.id)}
+              onFavoriteToggle={handleFavorite}
+            />
+          ))}
+        </Box>
 
         {!matchedDog && (
           <Box sx={{ display: "flex", justifyContent: "center" }}>
