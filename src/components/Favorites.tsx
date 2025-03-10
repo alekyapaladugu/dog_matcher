@@ -95,6 +95,7 @@ export const Favorites = ({ favorites, setFavorites }: FavoriteDogsProps) => {
               onClick={handleFindMatch}
               sx={{
                 mt: 5,
+                mb: 5,
                 width: "20%",
               }}
               disabled={favorites.length === 0}

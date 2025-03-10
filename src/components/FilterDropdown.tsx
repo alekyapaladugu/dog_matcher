@@ -8,12 +8,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Filters } from "./DogsFilter";
+import { Filters } from "../pages/Dogs";
 import FilterListIcon from "@mui/icons-material/FilterList";
 
 interface FilterDropdownProps {
   filters: Filters;
-  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
+  setFilters: (updatedFilters: Partial<Filters>) => void;
   breeds: string[];
 }
 

@@ -1,45 +1,50 @@
-import { useEffect, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { searchDogs, fetchDogsByIds, Dog } from "../api/dogService";
+import { Dog } from "../api/dogService";
 import Loader from "../components/Loader";
-import ErrorModal from "../components/ErrorModal";
 import { Container, Typography, Box, Pagination, Chip } from "@mui/material";
 import { DogsCard } from "./DogsCard";
 import FilterDropdown from "./FilterDropdown";
 import SortByDropdown from "./SortByDropdown";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import { Filters } from "../pages/Dogs";
 
 interface DogsFilterProps {
   breeds: string[];
+  filters: Filters;
+  dogsDetails: Dog[];
+  dogDetailsPending: boolean;
   favorites: Dog[];
   setFavorites: React.Dispatch<React.SetStateAction<Dog[]>>;
-}
-
-export interface Filters {
-  selectedBreeds: string[];
-  zipCodes: string[];
-  ageMin: string;
-  ageMax: string;
-  sortOrder: string;
+  handleFilterChange: (updatedFilters: Partial<Filters>) => void;
+  handleDeleteSelection: (
+    filter_name: keyof Filters,
+    value: Filters[typeof filter_name]
+  ) => void;
+  page: number;
+  setPage: React.Dispatch<React.SetStateAction<number>>;
+  searchResults:
+    | {
+        resultIds: string[];
+        total: number;
+        next?: string | undefined;
+        prev?: string | undefined;
+      }
+    | undefined;
 }
 
 export const DogsFilter = ({
   breeds,
+  filters,
+  dogsDetails,
+  dogDetailsPending,
   favorites,
   setFavorites,
+  handleFilterChange,
+  handleDeleteSelection,
+  page,
+  setPage,
+  searchResults,
 }: DogsFilterProps) => {
-  const [page, setPage] = useState<number>(1);
-  const [error, setError] = useState<string | null>(null);
-  const [dogsDetails, setDogDetails] = useState<Dog[]>([]);
-  const [filters, setFilters] = useState<Filters>({
-    selectedBreeds: [],
-    zipCodes: [],
-    ageMin: "",
-    ageMax: "",
-    sortOrder: "breed:asc",
-  });
-
   const sortOptions = [
     { label: "Breed (A-Z)", value: "breed:asc", icon: <ArrowUpwardIcon /> },
     { label: "Breed (Z-A)", value: "breed:desc", icon: <ArrowDownwardIcon /> },
@@ -61,49 +66,6 @@ export const DogsFilter = ({
     },
   ];
 
-  const {
-    data: searchResults,
-    isError: isSearchResError,
-    isLoading: searchResLoading,
-    error: searchResError,
-  } = useQuery({
-    queryKey: ["dogs", filters, page],
-    queryFn: () =>
-      searchDogs({
-        breeds: filters.selectedBreeds.length ? filters.selectedBreeds : [],
-        zipCodes: filters.zipCodes.length ? filters.zipCodes : [],
-        ageMin: filters.ageMin ? Number(filters.ageMin) : undefined,
-        ageMax: filters.ageMax ? Number(filters.ageMax) : undefined,
-        size: 10,
-        from: (page - 1) * 10,
-        sort: filters.sortOrder,
-      }),
-  });
-
-  const dogDetailsMutation = useMutation({
-    mutationFn: fetchDogsByIds,
-    onSuccess: (data: Dog[]) => setDogDetails(data),
-  });
-
-  useEffect(() => {
-    if (searchResults?.resultIds && searchResults?.resultIds?.length > 0) {
-      dogDetailsMutation.mutate(searchResults?.resultIds);
-    } else {
-      setDogDetails([]);
-    }
-  }, [searchResults]);
-
-  useEffect(() => {
-    if (isSearchResError) {
-      setError(`Filtering of Dogs failed: ${searchResError.message}`);
-    }
-    if (dogDetailsMutation?.isError) {
-      setError(
-        `Fetching of Dog Details failed: ${dogDetailsMutation?.error?.message}`
-      );
-    }
-  }, [isSearchResError, dogDetailsMutation?.isError]);
-
   const handleFavorite = (dog: Dog) => {
     setFavorites((prevFavorites) =>
       prevFavorites.some((fav) => fav.id === dog.id)
@@ -112,22 +74,9 @@ export const DogsFilter = ({
     );
   };
 
-  const handleFilterChange = (updatedFilters: Object) => {
-    setFilters((prevFilters) => ({ ...prevFilters, ...updatedFilters }));
-    setPage(1);
-  };
-
   const getSortLabel = (value: string) => {
     const option = sortOptions.find((opt) => opt.value === value);
     return option ? option.label : "Breed (A-Z)";
-  };
-
-  const handleDeleteSelection = (
-    filter_name: string,
-    value: string | string[] | number[]
-  ) => {
-    setFilters({ ...filters, [filter_name]: value });
-    setPage(1);
   };
 
   return (
@@ -145,7 +94,6 @@ export const DogsFilter = ({
       >
         Search Dogs
       </Typography>
-      {error && <ErrorModal message={error} onClose={() => setError(null)} />}
 
       <Box
         sx={{
@@ -171,7 +119,11 @@ export const DogsFilter = ({
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
         <Chip
           label={`Sorted by: ${getSortLabel(filters.sortOrder)}`}
-          onDelete={() => handleDeleteSelection("sortOrder", "breed:asc")}
+          onDelete={
+            filters.sortOrder !== "breed:asc"
+              ? () => handleDeleteSelection("sortOrder", "breed:asc")
+              : undefined
+          }
         />
         {filters?.selectedBreeds?.map((breed) => (
           <Chip
@@ -212,13 +164,12 @@ export const DogsFilter = ({
         )}
       </Box>
 
-      {(searchResLoading || dogDetailsMutation?.isPending) && <Loader />}
       {searchResults?.total === 0 && (
         <Typography variant="h6" textAlign="center" sx={{ mt: 5 }} gutterBottom>
           No dogs found. Please try adjusting your filters.
         </Typography>
       )}
-
+      {dogDetailsPending && <Loader />}
       <Box
         sx={{
           display: "grid",
@@ -242,7 +193,7 @@ export const DogsFilter = ({
         ))}
       </Box>
 
-      {searchResults?.total && searchResults?.total > 0 ? (
+      {dogsDetails && searchResults?.total && searchResults?.total > 0 ? (
         <Box sx={{ p: 5, display: "flex", justifyContent: "center" }}>
           <Pagination
             count={Math.ceil((searchResults?.total || 10) / 10)}
