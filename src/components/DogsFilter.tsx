@@ -193,7 +193,7 @@ export const DogsFilter = ({
         ))}
       </Box>
 
-      {dogsDetails && searchResults?.total && searchResults?.total > 0 ? (
+      {dogsDetails?.length > 0 && (searchResults?.total ?? 0) > 0 ? (
         <Box sx={{ p: 5, display: "flex", justifyContent: "center" }}>
           <Pagination
             count={Math.ceil((searchResults?.total || 10) / 10)}

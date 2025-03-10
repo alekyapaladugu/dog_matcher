@@ -98,7 +98,7 @@ const Dogs = () => {
     filter_name: keyof Filters,
     value: Filters[typeof filter_name]
   ) => {
-    setFilters({ ...filters, [filter_name]: value });
+    setFilters((prev) => ({ ...prev, [filter_name]: value }));
     setPage(1);
   };
 
